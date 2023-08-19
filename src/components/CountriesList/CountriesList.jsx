@@ -1,10 +1,12 @@
+import { useCities } from '../../contexts/CitiesContext';
 import CountryItem from '../CountryItem/CountryItem';
 import Message from '../Message/Message';
 import Spinner from '../Spinner/Spinner';
 
 import styles from './CountriesList.module.css';
 
-const CountriesList = ({ cities, isLoading }) => {
+const CountriesList = () => {
+  const { cities, isLoading } = useCities();
   const countries = Object.values(
     cities.reduce((acc, city) => {
       return {
