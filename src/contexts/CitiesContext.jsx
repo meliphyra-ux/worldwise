@@ -30,6 +30,25 @@ const CitiesProvider = ({ children }) => {
     }
   }, []);
 
+  const handleCreateCity = useCallback(async (newCity) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/cities`, {
+        method: 'POST',
+        body: JSON.stringify(newCity),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+      setCities((cities) => [...cities, data]);
+    } catch (err) {
+      console.warn(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchCities() {
       setIsLoading(true);
@@ -51,6 +70,7 @@ const CitiesProvider = ({ children }) => {
     isLoading,
     selectedCity,
     onSelectCity: handleSelectCity,
+    onCreateCity: handleCreateCity,
   };
   return (
     <CitiesContext.Provider value={value}>{children}</CitiesContext.Provider>
