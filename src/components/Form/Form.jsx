@@ -1,6 +1,9 @@
-// "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=0&longitude=0"
 import { useEffect, useState, useRef } from 'react';
+import { useCities } from '../../contexts/CitiesContext';
+import { useNavigate } from 'react-router-dom';
 import { useURLPosition } from '../../hooks/useURLPosition';
+
+import { convertToEmoji } from '../../utils/convertToEmoji';
 
 import Message from '../Message/Message';
 import Button from '../Button/Button';
@@ -8,24 +11,13 @@ import BackButton from '../BackButton/BackButton';
 import Spinner from '../Spinner/Spinner';
 import DatePicker from 'react-datepicker';
 
-import 'react-datepicker/dist/react-datepicker.css';
 import styles from './Form.module.css';
-import { useCities } from '../../contexts/CitiesContext';
-import { useNavigate } from 'react-router-dom';
-
-export function convertToEmoji(countryCode) {
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map((char) => 127397 + char.charCodeAt());
-  return String.fromCodePoint(...codePoints);
-}
+import 'react-datepicker/dist/react-datepicker.css';
 
 const BASE_URL = 'https://api.bigdatacloud.net/data/reverse-geocode-client';
 
-// Will replace states with reducer later
 function Form() {
-  const { onCreateCity, isLoading } = useCities();
+  const { createCity, isLoading } = useCities();
   const navigate = useNavigate();
   const { mapLat, mapLng } = useURLPosition();
   const [newCity, setNewCity] = useState({
@@ -92,7 +84,7 @@ function Form() {
         lng: mapLng,
       },
     };
-    await onCreateCity(newCity);
+    await createCity(newCity);
     navigate('/app/cities');
   }
 

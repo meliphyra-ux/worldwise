@@ -17,13 +17,13 @@ const formatDate = (date) =>
 
 function City() {
   const { id } = useParams();
-  const { isLoading, selectedCity, onSelectCity } = useCities();
+  const { isLoading, selectedCity, selectCity } = useCities();
 
   useEffect(() => {
-    onSelectCity(id);
-  }, [id, onSelectCity]);
+    selectCity(id);
+  }, [id, selectCity]);
 
-  if (isLoading || selectedCity === null) {
+  if (isLoading) {
     return <Spinner />;
   }
 

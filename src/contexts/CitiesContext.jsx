@@ -1,37 +1,89 @@
 import {
-  useState,
   useEffect,
   createContext,
   useContext,
   useCallback,
+  useReducer,
 } from 'react';
 
-const CitiesContext = createContext(null);
+/* ---- API URL ---- */
 
 const BASE_URL = 'http://localhost:8000';
 
-const CitiesProvider = ({ children }) => {
-  const [cities, setCities] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(null);
-
-  const handleSelectCity = useCallback(async (id) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`${BASE_URL}/cities/${id}`);
-      const data = await res.json();
-      if (data) {
-        setSelectedCity(data);
-      }
-    } catch (err) {
-      console.warn(err);
-    } finally {
-      setIsLoading(false);
+const INITIAL_STATE = {
+  cities: [],
+  isLoading: false,
+  selectedCity: {},
+  error: null,
+};
+/* ---- REDUCER ---- */
+function citiesReducer(state, action) {
+  switch (action.type) {
+    case 'citiesReducer/TOGGLE_LOADING': {
+      return {
+        ...state,
+        isLoading: !state.isLoading,
+        error: !state.isLoading ? null : state.error,
+      };
     }
-  }, []);
+    case 'citiesReducer/LOAD_CITIES': {
+      return { ...state, cities: action.payload };
+    }
+    case 'citiesReducer/CREATE_CITY': {
+      return { ...state, cities: [...state.cities, action.payload] };
+    }
+    case 'citiesReducer/DELETE_CITY': {
+      return {
+        ...state,
+        cities: state.cities.filter((city) => city.id !== action.payload),
+      };
+    }
+    case 'citiesReducer/REQUEST_FAILED': {
+      return { ...state, error: action.payload };
+    }
+    case 'citiesReducer/SELECT_CITY': {
+      return { ...state, selectedCity: action.payload };
+    }
+    default: {
+      return state;
+    }
+  }
+}
+const toggleLoadingAction = { type: 'citiesReducer/TOGGLE_LOADING' };
 
-  const handleCreateCity = useCallback(async (newCity) => {
-    setIsLoading(true);
+/* ---- CONTEXT ---- */
+
+const CitiesContext = createContext(null);
+
+const CitiesProvider = ({ children }) => {
+  const [{ cities, isLoading, selectedCity }, dispatch] = useReducer(
+    citiesReducer,
+    INITIAL_STATE
+  );
+
+  const selectCity = useCallback(
+    async (id) => {
+      if (selectedCity.id === Number(id)) {
+        return;
+      }
+      dispatch(toggleLoadingAction);
+      try {
+        const res = await fetch(`${BASE_URL}/cities/${id}`);
+        const data = await res.json();
+        if (data) {
+          dispatch({ type: 'citiesReducer/SELECT_CITY', payload: data });
+        }
+      } catch (err) {
+        dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err });
+      } finally {
+        dispatch(toggleLoadingAction);
+      }
+    },
+    [selectedCity.id]
+  );
+
+  const createCity = async (newCity) => {
+    dispatch(toggleLoadingAction);
     try {
       const res = await fetch(`${BASE_URL}/cities`, {
         method: 'POST',
@@ -41,25 +93,42 @@ const CitiesProvider = ({ children }) => {
         },
       });
       const data = await res.json();
-      setCities((cities) => [...cities, data]);
+      dispatch({ type: 'citiesReducer/CREATE_CITY', payload: data });
     } catch (err) {
-      console.warn(err);
+      dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err });
     } finally {
-      setIsLoading(false);
+      dispatch(toggleLoadingAction);
     }
-  }, []);
+  };
+
+  const deleteCity = async (id) => {
+    dispatch(toggleLoadingAction);
+    try {
+      await fetch(`${BASE_URL}/cities/${id}`, {
+        method: 'DELETE',
+      });
+      dispatch({
+        type: 'citiesReducer/DELETE_CITY',
+        payload: id,
+      });
+    } catch (err) {
+      dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err });
+    } finally {
+      dispatch(toggleLoadingAction);
+    }
+  };
 
   useEffect(() => {
     async function fetchCities() {
-      setIsLoading(true);
+      dispatch(toggleLoadingAction);
       try {
         const res = await fetch(`${BASE_URL}/cities`);
         const data = await res.json();
-        setCities(data);
+        dispatch({ type: 'citiesReducer/LOAD_CITIES', payload: data });
       } catch (err) {
-        console.warn(err);
+        dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err });
       } finally {
-        setIsLoading(false);
+        dispatch(toggleLoadingAction);
       }
     }
     fetchCities();
@@ -69,13 +138,16 @@ const CitiesProvider = ({ children }) => {
     cities,
     isLoading,
     selectedCity,
-    onSelectCity: handleSelectCity,
-    onCreateCity: handleCreateCity,
+    selectCity,
+    createCity,
+    deleteCity,
   };
   return (
     <CitiesContext.Provider value={value}>{children}</CitiesContext.Provider>
   );
 };
+
+/* ---- New hook for shortening imports ---- */
 
 const useCities = () => {
   const context = useContext(CitiesContext);

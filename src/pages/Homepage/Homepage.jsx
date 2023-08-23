@@ -3,7 +3,6 @@ import styles from './Homepage.module.css';
 import PageNav from '../../components/PageNav/PageNav';
 
 export default function Homepage() {
-  console.log('rendered');
   return (
     <main className={styles.homepage}>
       <PageNav />
