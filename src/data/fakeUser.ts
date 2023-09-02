@@ -1,4 +1,5 @@
-export const FAKE_USER = {
+import { User } from '@/types/types';
+export const FAKE_USER: User = {
   name: 'Jack',
   email: 'jack@example.com',
   password: 'qwerty',

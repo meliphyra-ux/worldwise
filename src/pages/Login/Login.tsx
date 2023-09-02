@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, MouseEvent } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 import Button from '@/components/Button/Button';
-import PageNav from '../../components/PageNav/PageNav';
+import PageNav from '@/components/PageNav/PageNav';
 
 import styles from './Login.module.css';
 
@@ -15,9 +15,9 @@ export default function Login() {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleLogin = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (login && password) login(email, password);
+    if (email && password) login(email, password);
   };
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function Login() {
         </div>
 
         <div>
-          <Button type="primary" onClick={handleLogin}>
+          <Button variant="primary" onClick={handleLogin}>
             Login
           </Button>
         </div>

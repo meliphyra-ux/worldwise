@@ -1,10 +1,16 @@
-import { createContext, useContext, useReducer } from 'react';
+import { ReactNode, createContext, useContext, useReducer } from 'react';
 
 import { FAKE_USER } from '../data/fakeUser';
+import { User } from '@/types/types';
 
 /* ---- REDUCER ---- */
 
-const authReducer = (state, action) => {
+type LOGIN = { type: 'authReducer/USER_LOGGED_IN'; payload: User };
+type LOGOUT = { type: 'authReducer/USER_LOGGED_OUT' };
+
+type AuthActions = LOGIN | LOGOUT;
+
+const authReducer = (state: AuthProps, action: AuthActions): AuthProps => {
   switch (action.type) {
     case 'authReducer/USER_LOGGED_IN': {
       return { ...state, user: action.payload, isAuthenticated: true };
@@ -20,13 +26,20 @@ const authReducer = (state, action) => {
 const INITIAL_STATE = {
   user: null,
   isAuthenticated: false,
+  login: () => {},
+};
+
+type AuthProps = {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => void;
 };
 
 /* ---- CONTEXT  ---- */
 
-const AuthContext = createContext();
+const AuthContext = createContext<AuthProps>(INITIAL_STATE);
 
-const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [{ user, isAuthenticated }, dispatch] = useReducer(
     authReducer,
     INITIAL_STATE
@@ -38,7 +51,7 @@ const AuthProvider = ({ children }) => {
     login,
     logout,
   };
-  function login(email, password) {
+  function login(email: string, password: string) {
     if (email === FAKE_USER.email && password === FAKE_USER.password) {
       dispatch({ type: 'authReducer/USER_LOGGED_IN', payload: FAKE_USER });
     }
