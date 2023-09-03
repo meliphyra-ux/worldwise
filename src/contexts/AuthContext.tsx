@@ -1,12 +1,12 @@
 import { ReactNode, createContext, useContext, useReducer } from 'react';
 
 import { FAKE_USER } from '../data/fakeUser';
-import { User } from '@/types/types';
+import { Action, ActionWithPayload, User } from '@/types/types';
 
 /* ---- REDUCER ---- */
 
-type LOGIN = { type: 'authReducer/USER_LOGGED_IN'; payload: User };
-type LOGOUT = { type: 'authReducer/USER_LOGGED_OUT' };
+type LOGIN = ActionWithPayload<'authReducer/USER_LOGGED_IN', User>;
+type LOGOUT = Action<'authReducer/USER_LOGGED_OUT'>;
 
 type AuthActions = LOGIN | LOGOUT;
 
