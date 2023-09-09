@@ -1,23 +1,69 @@
+import { Action, ActionWithPayload, City } from '@/types/types';
 import {
   useEffect,
   createContext,
   useContext,
   useCallback,
   useReducer,
+  ReactNode,
 } from 'react';
 
 /* ---- API URL ---- */
 
 const BASE_URL = 'http://localhost:8000';
 
-const INITIAL_STATE = {
+/* ---- REDUCER ---- */
+
+type CitiesProps = {
+  cities: City[];
+  isLoading: boolean;
+  selectedCity: City | { id: null };
+  error: Error | null;
+} & (
+  | {
+      selectCity: (id: string) => Promise<void>;
+      createCity: (newCity: City) => Promise<void>;
+      deleteCity: (id: number) => Promise<void>;
+    }
+  | {
+      selectCity: () => void;
+      createCity: () => void;
+      deleteCity: () => void;
+    }
+);
+
+const INITIAL_STATE: CitiesProps = {
   cities: [],
   isLoading: false,
-  selectedCity: {},
+  selectedCity: { id: null },
   error: null,
+  selectCity: () => {},
+  createCity: () => {},
+  deleteCity: () => {},
 };
-/* ---- REDUCER ---- */
-function citiesReducer(state, action) {
+
+type CitiesToggleLoading = Action<'citiesReducer/TOGGLE_LOADING'>;
+type CitiesLoadCities = ActionWithPayload<'citiesReducer/LOAD_CITIES', City[]>;
+type CitiesCreateCity = ActionWithPayload<'citiesReducer/CREATE_CITY', City>;
+type CitiesDeleteCity = ActionWithPayload<'citiesReducer/DELETE_CITY', number>;
+type CitiesRequestFailed = ActionWithPayload<
+  'citiesReducer/REQUEST_FAILED',
+  Error
+>;
+type CitiesSelectCity = ActionWithPayload<'citiesReducer/SELECT_CITY', City>;
+
+type CitiesActions =
+  | CitiesCreateCity
+  | CitiesDeleteCity
+  | CitiesLoadCities
+  | CitiesRequestFailed
+  | CitiesToggleLoading
+  | CitiesSelectCity;
+
+const citiesReducer = (
+  state: CitiesProps,
+  action: CitiesActions
+): CitiesProps => {
   switch (action.type) {
     case 'citiesReducer/TOGGLE_LOADING': {
       return {
@@ -48,21 +94,23 @@ function citiesReducer(state, action) {
       return state;
     }
   }
-}
-const toggleLoadingAction = { type: 'citiesReducer/TOGGLE_LOADING' };
+};
+const toggleLoadingAction: CitiesToggleLoading = {
+  type: 'citiesReducer/TOGGLE_LOADING',
+};
 
 /* ---- CONTEXT ---- */
 
-const CitiesContext = createContext(null);
+const CitiesContext = createContext<CitiesProps>(INITIAL_STATE);
 
-const CitiesProvider = ({ children }) => {
-  const [{ cities, isLoading, selectedCity }, dispatch] = useReducer(
+const CitiesProvider = ({ children }: { children: ReactNode }) => {
+  const [{ cities, isLoading, selectedCity, error }, dispatch] = useReducer(
     citiesReducer,
     INITIAL_STATE
   );
 
   const selectCity = useCallback(
-    async (id) => {
+    async (id: string) => {
       if (selectedCity.id === Number(id)) {
         return;
       }
@@ -74,7 +122,10 @@ const CitiesProvider = ({ children }) => {
           dispatch({ type: 'citiesReducer/SELECT_CITY', payload: data });
         }
       } catch (err) {
-        dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err });
+        dispatch({
+          type: 'citiesReducer/REQUEST_FAILED',
+          payload: err as Error,
+        });
       } finally {
         dispatch(toggleLoadingAction);
       }
@@ -82,7 +133,7 @@ const CitiesProvider = ({ children }) => {
     [selectedCity.id]
   );
 
-  const createCity = async (newCity) => {
+  const createCity = async (newCity: City) => {
     dispatch(toggleLoadingAction);
     try {
       const res = await fetch(`${BASE_URL}/cities`, {
@@ -95,13 +146,13 @@ const CitiesProvider = ({ children }) => {
       const data = await res.json();
       dispatch({ type: 'citiesReducer/CREATE_CITY', payload: data });
     } catch (err) {
-      dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err });
+      dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err as Error });
     } finally {
       dispatch(toggleLoadingAction);
     }
   };
 
-  const deleteCity = async (id) => {
+  const deleteCity = async (id: number) => {
     dispatch(toggleLoadingAction);
     try {
       await fetch(`${BASE_URL}/cities/${id}`, {
@@ -112,7 +163,7 @@ const CitiesProvider = ({ children }) => {
         payload: id,
       });
     } catch (err) {
-      dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err });
+      dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err as Error });
     } finally {
       dispatch(toggleLoadingAction);
     }
@@ -126,7 +177,10 @@ const CitiesProvider = ({ children }) => {
         const data = await res.json();
         dispatch({ type: 'citiesReducer/LOAD_CITIES', payload: data });
       } catch (err) {
-        dispatch({ type: 'citiesReducer/REQUEST_FAILED', payload: err });
+        dispatch({
+          type: 'citiesReducer/REQUEST_FAILED',
+          payload: err as Error,
+        });
       } finally {
         dispatch(toggleLoadingAction);
       }
@@ -137,6 +191,7 @@ const CitiesProvider = ({ children }) => {
   const value = {
     cities,
     isLoading,
+    error,
     selectedCity,
     selectCity,
     createCity,

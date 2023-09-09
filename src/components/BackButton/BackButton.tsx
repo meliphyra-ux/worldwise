@@ -10,7 +10,7 @@ const BackButton = () => {
         e.preventDefault();
         navigate(-1);
       }}
-      type="back"
+      variant="back"
     >
       &larr; Back
     </Button>

@@ -10,7 +10,7 @@ import {
   useMap,
   useMapEvents,
 } from 'react-leaflet';
-import L from 'leaflet';
+import L, { LatLngExpression } from 'leaflet';
 
 import 'leaflet/dist/images/marker-shadow.png';
 
@@ -28,7 +28,7 @@ const leafletIcon = L.icon({
 const Map = () => {
   const { cities } = useCities();
   const { mapLat, mapLng } = useURLPosition();
-  const [mapPosition, setMapPosition] = useState([40, 0]);
+  const [mapPosition, setMapPosition] = useState<LatLngExpression>([40, 0]);
   const {
     isLoading: isLoadingPosition,
     position: geolocationPosition,
@@ -36,7 +36,7 @@ const Map = () => {
   } = useGeolocation();
 
   useEffect(() => {
-    if (mapLat && mapLng) setMapPosition([mapLat, mapLng]);
+    if (mapLat && mapLng) setMapPosition([Number(mapLat), Number(mapLng)]);
   }, [mapLat, mapLng]);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const Map = () => {
       // onClick={() => navigate('form')}
     >
       {!geolocationPosition ? (
-        <Button type="position" onClick={getPosition}>
+        <Button variant="position" onClick={getPosition}>
           {isLoadingPosition ? 'Loading...' : 'Use your position'}
         </Button>
       ) : null}
@@ -84,7 +84,7 @@ const Map = () => {
   );
 };
 
-const ChangeCenter = ({ position }) => {
+const ChangeCenter = ({ position }: { position: LatLngExpression }) => {
   const map = useMap();
   map.setView(position);
   return null;
@@ -95,6 +95,7 @@ const DetectClick = () => {
   useMapEvents({
     click: (e) => navigate(`form?lat=${e.latlng.lat}&lng=${e.latlng.lng}`),
   });
+  return null;
 };
 
 export default Map;

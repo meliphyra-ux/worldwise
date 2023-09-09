@@ -7,7 +7,7 @@ import Spinner from '../Spinner/Spinner';
 import styles from './City.module.css';
 import BackButton from '../BackButton/BackButton';
 
-const formatDate = (date) =>
+const formatDate = (date: string) =>
   new Intl.DateTimeFormat('en', {
     day: 'numeric',
     month: 'long',
@@ -20,10 +20,10 @@ function City() {
   const { isLoading, selectedCity, selectCity } = useCities();
 
   useEffect(() => {
-    selectCity(id);
+    selectCity(id as string);
   }, [id, selectCity]);
 
-  if (isLoading) {
+  if (isLoading || selectedCity.id === null) {
     return <Spinner />;
   }
 
@@ -39,7 +39,7 @@ function City() {
 
       <div className={styles.row}>
         <h6>You went to {cityName} on</h6>
-        <p>{formatDate(date || null)}</p>
+        <p>{formatDate(date)}</p>
       </div>
 
       {notes && (
