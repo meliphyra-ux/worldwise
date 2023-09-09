@@ -21,7 +21,7 @@ type CitiesProps = {
   error: Error | null;
 } & (
   | {
-      selectCity: (id: number) => Promise<void>;
+      selectCity: (id: string) => Promise<void>;
       createCity: (newCity: City) => Promise<void>;
       deleteCity: (id: number) => Promise<void>;
     }
@@ -110,7 +110,7 @@ const CitiesProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const selectCity = useCallback(
-    async (id: number) => {
+    async (id: string) => {
       if (selectedCity.id === Number(id)) {
         return;
       }

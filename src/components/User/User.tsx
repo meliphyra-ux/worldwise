@@ -11,13 +11,13 @@ function User() {
     logout();
     navigate('/');
   };
-  return (
+  return user !== null ? (
     <div className={styles.user}>
       <img src={user.avatar} alt={user.name} />
       <span>Welcome, {user.name}</span>
       <button onClick={handleClick}>Logout</button>
     </div>
-  );
+  ) : null;
 }
 
 export default User;

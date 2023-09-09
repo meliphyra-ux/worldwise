@@ -27,12 +27,14 @@ const INITIAL_STATE = {
   user: null,
   isAuthenticated: false,
   login: () => {},
+  logout: () => {},
 };
 
 type AuthProps = {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => void;
+  logout: () => void;
 };
 
 /* ---- CONTEXT  ---- */

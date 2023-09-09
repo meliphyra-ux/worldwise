@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import styles from './CityItem.module.css';
 import { useCities } from '../../contexts/CitiesContext';
+import { City } from '@/types/types';
+import { FormEvent } from 'react';
 
-const formatDate = (date) =>
+const formatDate = (date: string) =>
   new Intl.DateTimeFormat('en', {
     day: 'numeric',
     month: 'long',
@@ -10,12 +12,12 @@ const formatDate = (date) =>
     weekday: 'long',
   }).format(new Date(date));
 
-const CityItem = ({ city }) => {
+const CityItem = ({ city }: { city: City }) => {
   const { selectedCity, deleteCity } = useCities();
   const { cityName, emoji, date, id, position } = city;
   const formatedDate = formatDate(date);
 
-  function handleDeleteCity(e) {
+  function handleDeleteCity(e: FormEvent) {
     e.preventDefault();
     deleteCity(id);
   }
